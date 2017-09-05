@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Comedy GIFs</title>
+  <style type="text/css">
+    button,
+    div,
+    form,
+    input {
+      margin: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Comedian GIFs</h1>
+
+    <!-- Rendered Buttons will get Dumped Here  -->
+    <div id="buttons-view"></div>
+
+    <form id="comdy-form">
+      <label for="comdy-input">Search a comedian:</label>
+      <input type="text" id="comdy-input"><br>
+
+      <!-- Button triggers new movie to be added -->
+      <input id="add-comdy" type="submit" value="Submit">
+    </form>
+
+    <!-- Movies will Get Dumped Dere -->
+    <div id="comdy-view" class="gif" data-still= data-animate= data-state="still"></div>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      // Initial array of movies
+      var comedianArray = ["Bill Burr", "Chris Rock", "Dave Chappelle", "Ari Shaffir", "Richard Pryor", "Tom Segura", "Patrice Oneal"];
+
+      // displayMovieInfo function re-renders the HTML to display the appropriate content
+      function displayComdyInfo() {
+
+        var comedian = $(this).attr("data-name");
+        var queryURL = "https://api.giphy.com/v1/gifs/search?api_key=2b1893f1b977435d87788a21ef2a7f03&q=" + comedian + "&offset=0&rating=R&lang=en&limit=25";
+
+        // Creating an AJAX call for the specific movie button being clicked
+        $.ajax({
+          url: queryURL,
+          method: "GET"
+        }).done(function(response) {
+
+            console.log(queryURL)
+          // Creating a div to hold the movie
+          var comdyDiv = $("<div class='comdy'>");
+          // Storing the rating data
+          var rating = response.data[0].rating;
+          // Creating an element to have the rating displayed
+          var pOne = $("<p>").text("Rating: " + rating);
+          // Displaying the rating
+          comdyDiv.append(pOne);
+
+          
+          // Retrieving the URL for the image
+          var imgURL = response.data[0].images.original.url;
+
+          // Creating an element to hold the image
+          var image = $("<img>").attr("src", imgURL);
+
+          // Appending the image
+          comdyDiv.append(image);
+
+          // Putting the entire movie above the previous movies
+          $("#comdy-view").prepend(comdyDiv);
+        });
+
+      }
+
+      // Function for displaying movie data
+      function renderButtons() {
+
+        // Deleting the movies prior to adding new movies
+        // (this is necessary otherwise you will have repeat buttons)
+        $("#buttons-view").empty();
+
+        // Looping through the array of movies
+        for (var i = 0; i < comedianArray.length; i++) {
+
+          // Then dynamicaly generating buttons for each movie in the array
+          // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
+          var a = $("<button>");
+          // Adding a class of movie to our button
+          a.addClass("comedian");
+          // Adding a data-attribute
+          a.attr("data-name", comedianArray[i]);
+          // Providing the initial button text
+          a.text(comedianArray[i]);
+          // Adding the button to the buttons-view div
+          $("#buttons-view").append(a);
+        }
+      }
+
+      // This function handles events where a movie button is clicked
+      $("#add-comdy").on("click", function(event) {
+        event.preventDefault();
+        // This line grabs the input from the textbox
+        var comedian = $("#comdy-input").val().trim();
+
+        // Adding movie from the textbox to our array
+        comedianArray.push(comedian);
+
+        // Calling renderButtons which handles the processing of our movie array
+        renderButtons();
+      });
+
+      // Adding a click event listener to all elements with a class of "movie"
+      $(document).on("click", ".comedian", displayComdyInfo);
+
+      // Calling the renderButtons function to display the intial buttons
+      renderButtons();
+
+        $(".gif").on("click", function() {
+      // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
+      var state = $(this).attr("data-state");
+      // If the clicked image's state is still, update its src attribute to what its data-animate value is.
+      // Then, set the image's data-state to animate
+      // Else set src to the data-still value
+      if (state === "still") {
+        $(this).attr("src", $(this).attr("data-animate"));
+        $(this).attr("data-state", "animate");
+      } else {
+        $(this).attr("src", $(this).attr("data-still"));
+        $(this).attr("data-state", "still");
+      }
+    }); 
+
+
+
+    </script>
+  </div>
+</body>
+
+</html>
